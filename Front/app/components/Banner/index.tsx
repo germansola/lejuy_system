@@ -32,7 +32,7 @@ const Banner = () => {
                     <div className='col-span-6 flex justify-center relative'>
                         <div className='flex bg-white p-2 gap-5 items-center bottom-10 left-10 rounded-xl absolute'>
                             <Image src={'/images/poroto_dibujo.webp'} alt="pizza-image" width={88} height={88} />
-                            <p className='text-lg font-normal'>+5 variedades de porotos <br /> recipes.</p>
+                            <p className='text-lg font-normal'>+5 variedades de porotos <br /> en nuestro campo.</p>
                         </div>
                         <Image src="/images/Banner/poroto_rojo.webp" alt="nothing" width={1000} height={805} />
                     </div>

@@ -15,33 +15,18 @@ interface DataType {
 const postData: DataType[] = [
     {
         profession: 'Fundador',
-        name: 'Prisco Sola',
-        imgSrc: '/images/Expert/boyone.svg',
+        name: 'Prisco Sola Garcia',
+        imgSrc: '/images/Expert/poroto_laburante.png',
     },
     {
         profession: 'Co-Fundadora',
         name: 'Patricia T. Romero',
-        imgSrc: '/images/Expert/girl.png',
+        imgSrc: '/images/Expert/poroto_laburante.png',
     },
     {
         profession: 'EL CRACK',
         name: 'Ramiro G. Sola',
-        imgSrc: '/images/Expert/boytwo.svg',
-    },
-    {
-        profession: 'Junior Chef',
-        name: 'Shoo Thar Mien',
-        imgSrc: '/images/Expert/girl.png',
-    },
-    {
-        profession: 'Junior Chef',
-        name: 'Shoo Thar Mien',
-        imgSrc: '/images/Expert/girl.png',
-    },
-    {
-        profession: 'Junior Chef',
-        name: 'Shoo Thar Mien',
-        imgSrc: '/images/Expert/girl.png',
+        imgSrc: '/images/Expert/poroto_laburante.png',
     },
 ]
 
@@ -55,7 +40,7 @@ export default class MultipleItems extends Component {
             dots: false,
             infinite: true,
             slidesToShow: 3,
-            // centerMode: true,
+            centerMode: true,
             slidesToScroll: 1,
             arrows: false,
             autoplay: false,
@@ -113,11 +98,16 @@ export default class MultipleItems extends Component {
                         {postData.map((items, i) => (
                             <div key={i}>
                                 <div className='m-3 py-14 my-10 text-center'>
-                                    <div className="relative">
-                                        <Image src={items.imgSrc} alt="gaby" width={362} height={262} className="inline-block m-auto" />
-                                        <div className="absolute top-[50%] right-[2%]">
-                                            <Image src={'/images/Expert/Linkedin.svg'} alt="linkedin" width={220} height={120} />
-                                        </div>
+                                    <div className="relative mx-auto w-full max-w-[362px] aspect-square">
+                                        <Image src={items.imgSrc} alt={items.name} width={600} height={600} sizes="362px" className="w-full h-full rounded-full object-cover" />
+                                        {/* El circulo visible de Linkedin.svg no esta centrado en su lienzo: es
+                                            cx=119 cy=63 r=41 sobre 238x239, o sea al 50% de ancho y al 26.4% de
+                                            alto, y ocupa el 34.45% de la caja. Por eso la caja mide 51% (para que
+                                            el circulito quede en ~17.6% del avatar) y se corre -26.4% en Y: asi el
+                                            punto que se apoya en el borde es el circulo, no la caja vacia.
+                                            85.36% = 50% + 35.36%, que es donde la diagonal a 45 grados corta la
+                                            circunferencia. */}
+                                        <Image src={'/images/Expert/Linkedin.svg'} alt="LinkedIn" width={238} height={239} className="absolute left-[85.36%] top-[85.36%] w-[51%] h-auto -translate-x-1/2 -translate-y-[26.4%]" />
                                     </div>
                                     <h3 className='text-2xl font-semibold text-lightblack'>{items.name}</h3>
                                     <h4 className='text-lg font-normal text-lightblack pt-4 pb-2 opacity-50'>{items.profession}</h4>

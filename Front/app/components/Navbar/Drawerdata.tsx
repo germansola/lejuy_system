@@ -1,6 +1,7 @@
 import React from "react";
 import Link from "next/link";
 import Contactusform from "./Contactus";
+import Signindialog from "@/app/components/Navbar/Signindialog";
 
 interface NavigationItem {
     name: string;
@@ -11,7 +12,7 @@ interface NavigationItem {
 const navigation: NavigationItem[] = [
     { name: 'Home', href: '#home-section', current: false },
     { name: 'Sobre Nosotros', href: '#about-section', current: false },
-    { name: 'Recipe', href: '#cook-section', current: false },
+    { name: 'Nuesto Productos', href: '#cook-section', current: false },
     { name: 'Galeria', href: '#gallery-section', current: false },
 ]
 
@@ -40,7 +41,7 @@ const Data = () => {
                             </Link>
                         ))}
                         <div className="mt-4"></div>
-                        <button className='flex justify-center text-base w-full font-medium rounded-full bg-bgpink text-pink py-3 px-4 lg:px-8 navbutton hover:text-white'>Iniciar Sesion</button>
+                        <Signindialog />
                         <button className='flex justify-center text-base w-full font-medium rounded-full bg-transparent border border-bgpink text-pink py-3 px-4 lg:px-8 navbutton hover:text-white hover:bg-pink'>Contactenos</button>
 
                         {/* <Contactusform /> */}

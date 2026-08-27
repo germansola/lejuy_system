@@ -48,7 +48,7 @@ const products: ProductType[] = [
     {
         id: 3,
         section: "Mas",
-        link: ['Recipe', 'Chef', 'Food', 'Support']
+        link: ['Legal', 'Support']
     }
 ]
 
