@@ -10,13 +10,13 @@ const Cook = () => {
             <div className="mx-auto max-w-7xl lg:pt-20 sm:pb-24 px-6">
 
                 <div className='absolute right-0 bottom-[-18%] hidden lg:block'>
-                    <Image src={'/images/Cook/poroto_dibujo.png'} alt="burger-image" width={463} height={622} />
+                    <Image src={'/images/poroto_dibujo.webp'} alt="burger-image" width={463} height={622} />
                 </div>
 
                 <div className='grid grid-cols-1 lg:grid-cols-12 my-16 space-x-5'>
 
                     <div className='col-span-6 flex justify-start'>
-                        <Image src="/images/Cook/manoconplantaporoto.png" alt="nothing" width={636} height={808} />
+                        <Image src="/images/Cook/manoconplantaporoto.webp" alt="nothing" width={636} height={808} />
                     </div>
 
 
