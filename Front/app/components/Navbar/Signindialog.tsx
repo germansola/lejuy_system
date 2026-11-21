@@ -25,7 +25,7 @@ const Signin = () => {
     const openModal = () => {
         // Con una sesión guardada se va directo; si el token venció, el dashboard vuelve acá.
         if (getToken()) {
-            router.push("/dashboard")
+            router.replace("/dashboard")
             return
         }
         setError(null)
@@ -38,7 +38,11 @@ const Signin = () => {
         setEnviando(true)
         try {
             await login(email.trim(), password, recordar)
-            router.push("/dashboard")
+            // Cerrar el diálogo antes de navegar: si queda abierto, Headless UI deja
+            // bloqueado el scroll de la página. replace: la landing no queda en el historial.
+            setIsOpen(false)
+            setPassword('')
+            router.replace("/dashboard")
         } catch (err) {
             setError(err instanceof Error ? err.message : 'Ocurrió un error inesperado')
             setPassword('')
