@@ -28,7 +28,7 @@ def verificar_contrasena(contrasena: str, hash_guardado: str) -> bool:
 def crear_token(usuario: Usuario) -> str:
     expira = datetime.now(timezone.utc) + timedelta(minutes=settings.access_token_minutes)
     # `sub` es el id (no el nombre de usuario) para que el token siga valiendo si lo cambia.
-    payload = {"sub": str(usuario.id), "exp": expira}
+    payload = {"sub": str(usuario.id), "ver": usuario.version_sesion, "exp": expira}
     return jwt.encode(payload, settings.secret_key, algorithm=ALGORITHM)
 
 
@@ -44,11 +44,13 @@ def get_usuario_actual(
     try:
         payload = jwt.decode(token, settings.secret_key, algorithms=[ALGORITHM])
         usuario_id = int(payload["sub"])
-    except (jwt.InvalidTokenError, KeyError, ValueError):
+        version = int(payload.get("ver", 0))
+    except (jwt.InvalidTokenError, KeyError, ValueError, TypeError):
         raise no_autorizado
 
     usuario = db.get(Usuario, usuario_id)
-    if usuario is None or not usuario.activo:
+    # Un token emitido antes del último cambio de contraseña ya no vale.
+    if usuario is None or not usuario.activo or version != usuario.version_sesion:
         raise no_autorizado
     return usuario
 

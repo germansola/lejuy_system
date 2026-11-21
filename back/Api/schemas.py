@@ -80,6 +80,13 @@ class CambiarNombre(BaseModel):
     nombre_completo: NombreCompleto
 
 
+class CambiarEmail(BaseModel):
+    # Con el email se inicia sesión: se pide la contraseña para que nadie lo cambie
+    # desde una sesión que quedó abierta.
+    email: Email
+    contrasena_actual: str
+
+
 class Token(BaseModel):
     access_token: str
     token_type: str = "bearer"

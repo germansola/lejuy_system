@@ -14,6 +14,8 @@ class Settings(BaseSettings):
     access_token_minutes: int = 60 * 8
     # Orígenes del front que pueden llamar a la API. En .env: CORS_ORIGINS=["https://..."]
     cors_origins: list[str] = ["http://localhost:3000"]
+    # Carpeta donde se guardan los archivos subidos (fotos de perfil). Se sirve en /media.
+    media_dir: str = "media"
 
 
 settings = Settings()

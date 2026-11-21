@@ -1,13 +1,25 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import { usePathname, useRouter } from 'next/navigation';
 import Sidebar from '../components/Dashboard/Sidebar';
 import MobileTopBar from '../components/Dashboard/MobileTopBar';
 import { User, initialsOf } from '../components/Dashboard/data';
-import { ApiError, clearToken, getMe, getToken } from '../lib/api';
-import { SessionContext } from './session';
+import { ApiError, ApiUsuario, clearToken, getMe, getToken, mediaUrl } from '../lib/api';
+import { RefreshUserContext, SessionContext } from './session';
 import { TasksProvider } from './tasks';
+
+function userFromApi(me: ApiUsuario): User {
+  return {
+    id: me.id,
+    name: me.nombre_completo,
+    initials: initialsOf(me.nombre_completo),
+    role: me.rol,
+    username: me.nombre_usuario,
+    email: me.email,
+    photo: mediaUrl(me.foto_perfil),
+  };
+}
 
 // Valida la sesión y arma el marco común (menú lateral) de todas las páginas de /dashboard.
 export default function DashboardClient({ children }: { children: React.ReactNode }) {
@@ -38,9 +50,7 @@ export default function DashboardClient({ children }: { children: React.ReactNod
       return;
     }
     getMe()
-      .then((me) =>
-        setUser({ id: me.id, name: me.nombre_completo, initials: initialsOf(me.nombre_completo), role: me.rol }),
-      )
+      .then((me) => setUser(userFromApi(me)))
       .catch((e: unknown) => {
         if (e instanceof ApiError && e.status === 401) {
           // Token vencido, inválido o usuario desactivado.
@@ -51,6 +61,10 @@ export default function DashboardClient({ children }: { children: React.ReactNod
         }
       });
   }, [router]);
+
+  const refreshUser = useCallback(async () => {
+    setUser(userFromApi(await getMe()));
+  }, []);
 
   const logout = () => {
     clearToken();
@@ -82,15 +96,17 @@ export default function DashboardClient({ children }: { children: React.ReactNod
 
   return (
     <SessionContext.Provider value={user}>
-      <TasksProvider user={user}>
-        <div className="flex min-h-screen bg-lightpink">
-          <Sidebar user={user} onLogout={logout} open={menuOpen} onClose={() => setMenuOpen(false)} />
-          <div className="flex min-w-0 flex-1 flex-col">
-            <MobileTopBar menuOpen={menuOpen} onOpenMenu={() => setMenuOpen(true)} />
-            {children}
+      <RefreshUserContext.Provider value={refreshUser}>
+        <TasksProvider user={user}>
+          <div className="flex min-h-screen bg-lightpink">
+            <Sidebar user={user} onLogout={logout} open={menuOpen} onClose={() => setMenuOpen(false)} />
+            <div className="flex min-w-0 flex-1 flex-col">
+              <MobileTopBar menuOpen={menuOpen} onOpenMenu={() => setMenuOpen(true)} />
+              {children}
+            </div>
           </div>
-        </div>
-      </TasksProvider>
+        </TasksProvider>
+      </RefreshUserContext.Provider>
     </SessionContext.Provider>
   );
 }

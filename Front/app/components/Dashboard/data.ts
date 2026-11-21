@@ -29,6 +29,9 @@ export interface User {
   name: string;
   initials: string;
   role: Role;
+  username: string;
+  email: string;
+  photo: string | null; // URL absoluta de la foto de perfil, o null si no tiene
 }
 
 export const ROLE_LABEL: Record<Role, string> = {

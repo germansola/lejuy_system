@@ -1,6 +1,6 @@
 import enum
 
-from sqlalchemy import Boolean, Enum, String, true
+from sqlalchemy import Boolean, Enum, Integer, String, true
 from sqlalchemy.orm import Mapped, mapped_column
 
 from Database.base import Base, TimestampMixin
@@ -31,6 +31,9 @@ class Usuario(TimestampMixin, Base):
     telefono: Mapped[str | None] = mapped_column(String(30))
     email: Mapped[str] = mapped_column(String(255), unique=True, index=True)
     activo: Mapped[bool] = mapped_column(Boolean, default=True, server_default=true())
+    # Viaja dentro del token. Al cambiar la contraseña se incrementa y todos los tokens
+    # emitidos antes dejan de valer (se cierran las sesiones abiertas en otros dispositivos).
+    version_sesion: Mapped[int] = mapped_column(Integer, default=0, server_default="0")
 
     def __repr__(self) -> str:
         return f"<Usuario {self.nombre_usuario} ({self.rol.value})>"

@@ -17,6 +17,7 @@ import {
   XMarkIcon,
 } from '@heroicons/react/24/outline';
 import { useTasks } from '../../dashboard/tasks';
+import Avatar from './Avatar';
 import { ROLE_LABEL, TOOLS_BY_ROLE, Tool, User } from './data';
 
 type Icon = typeof Squares2X2Icon;
@@ -116,9 +117,7 @@ export default function Sidebar({
         </div>
 
         <div className="mt-[18px] flex items-center gap-3 rounded-xl bg-lightpink p-3">
-          <div className="flex h-10 w-10 items-center justify-center rounded-full bg-pink text-base font-semibold text-white">
-            {user.initials}
-          </div>
+          <Avatar user={user} className="h-10 w-10 text-base" />
           <div className="flex flex-col gap-1">
             <p className="text-base font-semibold text-textbl">{user.name}</p>
             <span className="w-fit rounded-full bg-darkpink px-2 py-0.5 text-xs font-medium text-pink">
@@ -152,7 +151,12 @@ export default function Sidebar({
         ))}
 
         <div className="flex-1" />
-        <NavItem label="Configuración" href="#" icon={AdjustmentsHorizontalIcon} />
+        <NavItem
+          label="Configuración"
+          href="/dashboard/configuracion"
+          icon={AdjustmentsHorizontalIcon}
+          active={isActive('/dashboard/configuracion')}
+        />
         <button
           type="button"
           onClick={onLogout}

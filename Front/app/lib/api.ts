@@ -94,6 +94,45 @@ export function getMe() {
   return request<ApiUsuario>('/auth/me');
 }
 
+// La API devuelve rutas como "/media/fotos/x.png"; el navegador necesita la URL completa.
+export function mediaUrl(path: string | null): string | null {
+  if (!path) return null;
+  return /^https?:\/\//.test(path) ? path : `${API_URL}${path}`;
+}
+
+// --- Mi cuenta (cualquier rol) ------------------------------------------------
+
+const json = (body: unknown): RequestInit => ({
+  headers: { 'Content-Type': 'application/json' },
+  body: JSON.stringify(body),
+});
+
+export function cambiarMiNombre(nombre_completo: string) {
+  return request<ApiUsuario>('/usuarios/me/nombre', { method: 'PATCH', ...json({ nombre_completo }) });
+}
+
+export function cambiarMiNombreUsuario(nombre_usuario: string) {
+  return request<ApiUsuario>('/usuarios/me/nombre-usuario', { method: 'PATCH', ...json({ nombre_usuario }) });
+}
+
+export function cambiarMiEmail(email: string, contrasena_actual: string) {
+  return request<ApiUsuario>('/usuarios/me/email', { method: 'PATCH', ...json({ email, contrasena_actual }) });
+}
+
+export function cambiarMiContrasena(contrasena_actual: string, contrasena_nueva: string) {
+  return request<void>('/usuarios/me/contrasena', { method: 'PATCH', ...json({ contrasena_actual, contrasena_nueva }) });
+}
+
+export function subirMiFoto(foto: File) {
+  const body = new FormData();
+  body.append('foto', foto);
+  return request<ApiUsuario>('/usuarios/me/foto', { method: 'POST', body });
+}
+
+export function quitarMiFoto() {
+  return request<ApiUsuario>('/usuarios/me/foto', { method: 'DELETE' });
+}
+
 // --- Usuarios (solo admin) --------------------------------------------------
 
 export interface ApiUsuarioResumen {
