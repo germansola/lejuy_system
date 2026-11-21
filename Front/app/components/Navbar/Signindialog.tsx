@@ -8,7 +8,8 @@ import { getToken, login } from '../../lib/api';
 
 
 
-const Signin = () => {
+// variant="nav": botón de la barra de escritorio. variant="drawer": botón a lo ancho del menú del celular.
+const Signin = ({ variant = 'nav' }: { variant?: 'nav' | 'drawer' }) => {
     let [isOpen, setIsOpen] = useState(false)
     const router = useRouter()
 
@@ -53,13 +54,17 @@ const Signin = () => {
 
     return (
         <>
-            <div className="absolute inset-y-0 right-0 flex items-center pr-2 sm:static sm:inset-auto sm:ml-6 sm:pr-0">
-                <div className='hidden md:block'>
+            {variant === 'drawer' ? (
+                <button type="button" className='flex justify-center text-base w-full font-medium rounded-full bg-pink text-white py-3 px-4 hover:opacity-90' onClick={openModal}>
+                    Iniciar Sesion
+                </button>
+            ) : (
+                <div className="flex items-center sm:ml-6">
                     <button type="button" className='flex justify-end text-xl font-medium bg-bgpink text-pink py-4 px-4 lg:px-8 navbutton rounded-full hover:text-white hover:bg-pink' onClick={openModal}>
                         Iniciar Sesion
                     </button>
                 </div>
-            </div>
+            )}
 
             <Transition appear show={isOpen} as={Fragment}>
                 <Dialog as="div" className="relative z-10" onClose={closeModal}>
