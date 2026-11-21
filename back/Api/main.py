@@ -1,7 +1,7 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
-from Api import auth, user
+from Api import auth, tarea, user
 from Api.config import settings
 
 # Las tablas las crea y modifica Alembic:  .venv/bin/alembic upgrade head
@@ -15,3 +15,4 @@ app.add_middleware(
 )
 app.include_router(auth.router)
 app.include_router(user.router)
+app.include_router(tarea.router)

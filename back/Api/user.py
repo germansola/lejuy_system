@@ -2,8 +2,8 @@ from fastapi import APIRouter, HTTPException, status
 from sqlalchemy import select
 from sqlalchemy.exc import IntegrityError
 
-from Api.schemas import CambiarContrasena, CambiarNombre, CambiarNombreUsuario, UsuarioCrear, UsuarioLeer, UsuarioResumen
-from Api.security import DB, Admin, UsuarioActual, hashear_contrasena, verificar_contrasena
+from Api.schemas import CambiarContrasena, CambiarNombre, CambiarNombreUsuario, UsuarioAsignable, UsuarioCrear, UsuarioLeer, UsuarioResumen
+from Api.security import DB, Admin, AdminODueno, UsuarioActual, hashear_contrasena, verificar_contrasena
 from Database.models import Rol, Usuario
 
 router = APIRouter(prefix="/usuarios", tags=["usuarios"])
@@ -25,6 +25,16 @@ def _guardar(db: DB, usuario: Usuario) -> Usuario:
         raise HTTPException(status.HTTP_409_CONFLICT, "El nombre de usuario o el email ya están en uso")
     db.refresh(usuario)
     return usuario
+
+
+# --- Admin y dueño ---------------------------------------------------------
+
+
+@router.get("/asignables", response_model=list[UsuarioAsignable])
+def listar_asignables(db: DB, _usuario: AdminODueno):
+    """Usuarios activos a los que se les puede asignar una tarea (incluye a quien consulta)."""
+    consulta = select(Usuario).where(Usuario.activo.is_(True)).order_by(Usuario.nombre_completo)
+    return db.scalars(consulta).all()
 
 
 # --- Solo admin -------------------------------------------------------------

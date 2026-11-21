@@ -53,6 +53,12 @@ def get_usuario_actual(
     return usuario
 
 
+def requiere_admin_o_dueno(usuario: Annotated[Usuario, Depends(get_usuario_actual)]) -> Usuario:
+    if usuario.rol not in (Rol.ADMIN, Rol.DUENO):
+        raise HTTPException(status.HTTP_403_FORBIDDEN, "Solo un administrador o el dueño pueden hacer esto")
+    return usuario
+
+
 def requiere_admin(usuario: Annotated[Usuario, Depends(get_usuario_actual)]) -> Usuario:
     if usuario.rol != Rol.ADMIN:
         raise HTTPException(status.HTTP_403_FORBIDDEN, "Solo un administrador puede hacer esto")
@@ -61,4 +67,5 @@ def requiere_admin(usuario: Annotated[Usuario, Depends(get_usuario_actual)]) -> 
 
 UsuarioActual = Annotated[Usuario, Depends(get_usuario_actual)]
 Admin = Annotated[Usuario, Depends(requiere_admin)]
+AdminODueno = Annotated[Usuario, Depends(requiere_admin_o_dueno)]
 DB = Annotated[Session, Depends(get_db)]

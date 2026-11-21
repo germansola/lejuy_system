@@ -1,5 +1,5 @@
 // Cliente de la API de Lejuy (back/). La URL se configura en .env.local.
-import type { Role } from '../components/Dashboard/data';
+import type { Category, Priority, Role, Status, Task } from '../components/Dashboard/data';
 
 export const API_URL = (process.env.NEXT_PUBLIC_API_URL ?? 'http://localhost:8000').replace(/\/$/, '');
 
@@ -127,4 +127,87 @@ export function crearUsuario(datos: NuevoUsuario) {
 
 export function cambiarActivo(id: number, activo: boolean) {
   return request<ApiUsuario>(`/usuarios/${id}/${activo ? 'activar' : 'desactivar'}`, { method: 'PATCH' });
+}
+
+// --- Asignación de tareas (admin y dueño) -----------------------------------
+
+export interface ApiUsuarioAsignable {
+  id: number;
+  nombre_completo: string;
+  rol: Role;
+}
+
+export function listarAsignables() {
+  return request<ApiUsuarioAsignable[]>('/usuarios/asignables');
+}
+
+// --- Tareas -----------------------------------------------------------------
+// Admin y dueño reciben todas; encargado y secretaria, solo las que tienen asignadas.
+
+export interface ApiTarea {
+  id: number;
+  titulo: string;
+  descripcion: string;
+  categoria: Category;
+  prioridad: Priority;
+  estado: Status;
+  fecha_inicio: string; // yyyy-mm-dd
+  fecha_vencimiento: string | null;
+  asignado_a: ApiUsuarioAsignable;
+  creado_por: ApiUsuarioAsignable;
+  creado_en: string;
+  actualizado_en: string;
+}
+
+export interface NuevaTarea {
+  titulo: string;
+  descripcion: string;
+  categoria: Category;
+  prioridad: Priority;
+  estado: Status;
+  fecha_inicio: string;
+  fecha_vencimiento: string | null;
+  asignado_a_id: number;
+}
+
+export function tareaDesdeApi(t: ApiTarea): Task {
+  return {
+    id: t.id,
+    title: t.titulo,
+    description: t.descripcion,
+    category: t.categoria,
+    priority: t.prioridad,
+    status: t.estado,
+    start: t.fecha_inicio,
+    due: t.fecha_vencimiento,
+    assigneeId: t.asignado_a.id,
+    assignee: t.asignado_a.nombre_completo,
+    assignedBy: t.creado_por.nombre_completo,
+  };
+}
+
+export async function listarTareas(): Promise<Task[]> {
+  return (await request<ApiTarea[]>('/tareas')).map(tareaDesdeApi);
+}
+
+export async function crearTarea(datos: NuevaTarea): Promise<Task> {
+  const t = await request<ApiTarea>('/tareas', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(datos),
+  });
+  return tareaDesdeApi(t);
+}
+
+export async function cambiarEstadoTarea(id: number, estado: Status): Promise<Task> {
+  const t = await request<ApiTarea>(`/tareas/${id}/estado`, {
+    method: 'PATCH',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ estado }),
+  });
+  return tareaDesdeApi(t);
+}
+
+export function eliminarTarea(id: number) {
+  return request<void>(`/tareas/${id}`, { method: 'DELETE' });
 }

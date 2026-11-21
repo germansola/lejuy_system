@@ -7,6 +7,7 @@ import MobileTopBar from '../components/Dashboard/MobileTopBar';
 import { User, initialsOf } from '../components/Dashboard/data';
 import { ApiError, clearToken, getMe, getToken } from '../lib/api';
 import { SessionContext } from './session';
+import { TasksProvider } from './tasks';
 
 // Valida la sesión y arma el marco común (menú lateral) de todas las páginas de /dashboard.
 export default function DashboardClient({ children }: { children: React.ReactNode }) {
@@ -80,12 +81,16 @@ export default function DashboardClient({ children }: { children: React.ReactNod
   }
 
   return (
-    <div className="flex min-h-screen bg-lightpink">
-      <Sidebar user={user} onLogout={logout} open={menuOpen} onClose={() => setMenuOpen(false)} />
-      <div className="flex min-w-0 flex-1 flex-col">
-        <MobileTopBar menuOpen={menuOpen} onOpenMenu={() => setMenuOpen(true)} />
-        <SessionContext.Provider value={user}>{children}</SessionContext.Provider>
-      </div>
-    </div>
+    <SessionContext.Provider value={user}>
+      <TasksProvider user={user}>
+        <div className="flex min-h-screen bg-lightpink">
+          <Sidebar user={user} onLogout={logout} open={menuOpen} onClose={() => setMenuOpen(false)} />
+          <div className="flex min-w-0 flex-1 flex-col">
+            <MobileTopBar menuOpen={menuOpen} onOpenMenu={() => setMenuOpen(true)} />
+            {children}
+          </div>
+        </div>
+      </TasksProvider>
+    </SessionContext.Provider>
   );
 }

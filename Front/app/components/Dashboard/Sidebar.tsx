@@ -16,6 +16,7 @@ import {
   ArrowLeftOnRectangleIcon,
   XMarkIcon,
 } from '@heroicons/react/24/outline';
+import { useTasks } from '../../dashboard/tasks';
 import { ROLE_LABEL, TOOLS_BY_ROLE, Tool, User } from './data';
 
 type Icon = typeof Squares2X2Icon;
@@ -23,7 +24,6 @@ type Icon = typeof Squares2X2Icon;
 const GENERAL: { label: string; href: string; icon: Icon }[] = [
   { label: 'Board de tareas', href: '/dashboard', icon: Squares2X2Icon },
   { label: 'Calendario', href: '#', icon: CalendarIcon },
-  { label: 'Notificaciones', href: '#', icon: BellIcon },
 ];
 
 // href '#' = herramienta todavía sin pantalla.
@@ -70,6 +70,14 @@ export default function Sidebar({
 }) {
   const pathname = usePathname();
   const isActive = (href: string) => href !== '#' && pathname === href;
+  const { unread, setPanelOpen } = useTasks();
+
+  // Abre el panel de la campana del encabezado (en móvil, cierra el menú y sube hasta ella).
+  const openNotifications = () => {
+    onClose();
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+    setPanelOpen(true);
+  };
 
   return (
     <>
@@ -124,6 +132,19 @@ export default function Sidebar({
         {GENERAL.map((item) => (
           <NavItem key={item.label} {...item} active={isActive(item.href)} />
         ))}
+        <button
+          type="button"
+          onClick={openNotifications}
+          className="flex items-center gap-3.5 rounded-[10px] px-3 py-3 text-left text-base text-textbl transition-colors hover:bg-lightpink"
+        >
+          <BellIcon className="h-[22px] w-[22px] text-textbl" strokeWidth={1.6} />
+          <span className="flex-1">Notificaciones</span>
+          {unread.size > 0 && (
+            <span className="flex h-5 min-w-[20px] items-center justify-center rounded-full bg-pink px-1.5 text-[11px] font-semibold text-white">
+              {unread.size > 9 ? '9+' : unread.size}
+            </span>
+          )}
+        </button>
 
         <SectionLabel>HERRAMIENTAS DEL ROL</SectionLabel>
         {TOOLS_BY_ROLE[user.role].map((tool) => (

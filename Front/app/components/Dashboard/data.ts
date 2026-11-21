@@ -1,6 +1,6 @@
 export type Role = 'admin' | 'dueno' | 'encargado' | 'secretaria';
 export type Status = 'todo' | 'doing' | 'done';
-export type Category = 'Campo' | 'Cosecha' | 'Ventas' | 'Logística' | 'Stock';
+export type Category = 'Campo' | 'Cosecha' | 'Ventas' | 'Logística' | 'Stock' | 'Otro';
 export type Priority = 'Alta' | 'Media' | 'Baja';
 
 export type Tool =
@@ -16,8 +16,11 @@ export interface Task {
   description: string;
   category: Category;
   priority: Priority;
-  due: string;
-  assignee: string;
+  start: string; // fecha de inicio, yyyy-mm-dd
+  due: string | null; // fecha de vencimiento, yyyy-mm-dd; null = no vence
+  assigneeId: number; // id del usuario asignado
+  assignee: string; // nombre completo de a quién se le asignó
+  assignedBy: string; // nombre completo de quién la creó/asignó
   status: Status;
 }
 
@@ -68,7 +71,57 @@ export const COLUMNS: { status: Status; title: string }[] = [
   { status: 'done', title: 'Finalizadas' },
 ];
 
-export const CATEGORIES: Category[] = ['Campo', 'Cosecha', 'Ventas', 'Logística', 'Stock'];
+export const CATEGORIES: Category[] = ['Campo', 'Cosecha', 'Ventas', 'Logística', 'Stock', 'Otro'];
+
+export const PRIORITIES: Priority[] = ['Alta', 'Media', 'Baja'];
+
+// Solo admin y dueño pueden asignarle tareas a otra persona y eliminar tareas.
+export const CAN_MANAGE_TASKS: Role[] = ['admin', 'dueno'];
+
+// Clases de la etiqueta de cada categoría y color del punto de cada opción (mismos colores que en Figma).
+export const CATEGORY_TAG: Record<Category, string> = {
+  Campo: 'bg-donesoft text-done',
+  Cosecha: 'bg-doingsoft text-doing',
+  Ventas: 'bg-darkpink text-pink',
+  Logística: 'bg-todosoft text-todo',
+  Stock: 'bg-todosoft text-todo',
+  Otro: 'bg-textbl/10 text-textbl',
+};
+
+export const CATEGORY_DOT: Record<Category, string> = {
+  Campo: 'bg-done',
+  Cosecha: 'bg-doing',
+  Ventas: 'bg-pink',
+  Logística: 'bg-todo',
+  Stock: 'bg-todo',
+  Otro: 'bg-textbl',
+};
+
+export const PRIORITY_DOT: Record<Priority, string> = { Alta: 'bg-pink', Media: 'bg-doing', Baja: 'bg-todo' };
+
+// --- Fechas (yyyy-mm-dd, siempre en hora local) ------------------------------
+
+const MONTHS = ['ene', 'feb', 'mar', 'abr', 'may', 'jun', 'jul', 'ago', 'sep', 'oct', 'nov', 'dic'];
+
+// Hoy en formato yyyy-mm-dd (toISOString usaría UTC y de noche puede dar el día siguiente).
+export function todayISO(): string {
+  const d = new Date();
+  const pad = (n: number) => String(n).padStart(2, '0');
+  return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}`;
+}
+
+// "2026-11-24" -> "24 nov" (tarjetas). Si es hoy, "Hoy".
+export function shortDate(iso: string): string {
+  if (iso === todayISO()) return 'Hoy';
+  const [, m, d] = iso.split('-').map(Number);
+  return `${d} ${MONTHS[m - 1]}`;
+}
+
+// "2026-11-24" -> "24 nov 2026" (detalle de la tarea).
+export function longDate(iso: string): string {
+  const [y, m, d] = iso.split('-').map(Number);
+  return `${d} ${MONTHS[m - 1]} ${y}`;
+}
 
 // "Germán Sola" -> "GS"; con una sola palabra, sus dos primeras letras.
 export function initialsOf(name: string): string {
@@ -77,18 +130,3 @@ export function initialsOf(name: string): string {
   if (parts.length === 1) return parts[0].slice(0, 2).toUpperCase();
   return (parts[0][0] + parts[parts.length - 1][0]).toUpperCase();
 }
-
-// Tareas de ejemplo hasta que exista su tabla en el backend.
-
-export const TASKS: Task[] = [
-  { id: 1, status: 'todo', category: 'Campo', priority: 'Alta', title: 'Preparar lote 3 para siembra', description: 'Rastrear y nivelar el suelo antes del jueves.', due: '24 nov', assignee: 'JM' },
-  { id: 2, status: 'todo', category: 'Logística', priority: 'Media', title: 'Coordinar flete a San Salvador', description: 'Confirmar camión para 40 bolsas de poroto alubia.', due: '26 nov', assignee: 'LR' },
-  { id: 3, status: 'todo', category: 'Ventas', priority: 'Media', title: 'Actualizar lista de precios', description: 'Ajustar precios de poroto negro y colorado.', due: '28 nov', assignee: 'GS' },
-  { id: 4, status: 'todo', category: 'Stock', priority: 'Baja', title: 'Inventario del depósito', description: 'Contar bolsas por variedad y registrar mermas.', due: '29 nov', assignee: 'AT' },
-  { id: 5, status: 'doing', category: 'Cosecha', priority: 'Alta', title: 'Cosecha de poroto alubia – lote 1', description: 'Avance del 60 %. Faltan 4 hectáreas.', due: 'Hoy', assignee: 'JM' },
-  { id: 6, status: 'doing', category: 'Ventas', priority: 'Alta', title: 'Pedido de Distribuidora Norte', description: 'Preparar 120 bolsas de 25 kg para el envío.', due: '22 nov', assignee: 'LR' },
-  { id: 7, status: 'doing', category: 'Campo', priority: 'Media', title: 'Reparar bomba de riego', description: 'Esperando el repuesto del proveedor.', due: '23 nov', assignee: 'AT' },
-  { id: 8, status: 'done', category: 'Campo', priority: 'Media', title: 'Fumigación del lote 2', description: 'Completada sin novedades.', due: '18 nov', assignee: 'JM' },
-  { id: 9, status: 'done', category: 'Logística', priority: 'Baja', title: 'Entrega en Palpalá', description: '60 bolsas entregadas y firmadas.', due: '17 nov', assignee: 'LR' },
-  { id: 10, status: 'done', category: 'Ventas', priority: 'Media', title: 'Facturación de octubre', description: 'Facturas emitidas y enviadas.', due: '15 nov', assignee: 'GS' },
-];

@@ -1,7 +1,9 @@
 'use client';
 
 import { useCallback, useEffect, useMemo, useState } from 'react';
-import { BellIcon, LockClosedIcon, MagnifyingGlassIcon } from '@heroicons/react/24/outline';
+import { LockClosedIcon, MagnifyingGlassIcon } from '@heroicons/react/24/outline';
+import { useRouter } from 'next/navigation';
+import NotificationsBell from '../NotificationsBell';
 import { useUser } from '../../../dashboard/session';
 import { ApiError, ApiUsuarioResumen, cambiarActivo, crearUsuario, listarUsuarios } from '../../../lib/api';
 import { ROLES, ROLE_LABEL, Role } from '../data';
@@ -16,6 +18,7 @@ function usernameFromEmail(email: string, suffix = ''): string {
 
 export default function UsersAdmin() {
   const me = useUser();
+  const router = useRouter();
   const [users, setUsers] = useState<ApiUsuarioResumen[] | null>(null);
   const [loadError, setLoadError] = useState<string | null>(null);
   const [query, setQuery] = useState('');
@@ -99,12 +102,7 @@ export default function UsersAdmin() {
             <LockClosedIcon className="h-4 w-4" strokeWidth={1.8} />
             Solo administradores
           </span>
-          <button
-            aria-label="Notificaciones"
-            className="flex h-12 w-12 items-center justify-center rounded-[10px] border border-line bg-white"
-          >
-            <BellIcon className="h-5 w-5 text-textbl" strokeWidth={1.6} />
-          </button>
+          <NotificationsBell onOpenTask={(id) => router.push(`/dashboard?tarea=${id}`)} />
         </div>
       </header>
 
