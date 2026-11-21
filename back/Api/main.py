@@ -1,3 +1,4 @@
+import warnings
 from pathlib import Path
 
 from fastapi import FastAPI
@@ -23,5 +24,10 @@ app.include_router(tarea.router)
 # Fotos de perfil guardadas en disco (solo en desarrollo; en Vercel van a Blob y el disco no se puede usar).
 # Los nombres son aleatorios, así que no se pueden adivinar.
 if not archivos.usa_blob():
-    Path(settings.media_dir).mkdir(parents=True, exist_ok=True)
-    app.mount("/media", StaticFiles(directory=settings.media_dir), name="media")
+    try:
+        Path(settings.media_dir).mkdir(parents=True, exist_ok=True)
+    except OSError:
+        # Disco de solo lectura (Vercel sin Blob conectado): la API arranca igual, sin fotos.
+        warnings.warn("No se puede escribir en media_dir y no hay BLOB_READ_WRITE_TOKEN: las fotos no se van a poder subir.")
+    else:
+        app.mount("/media", StaticFiles(directory=settings.media_dir), name="media")

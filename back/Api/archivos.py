@@ -49,8 +49,11 @@ def guardar(carpeta: str, prefijo: str, extension: str, datos: bytes) -> str:
 
     if not usa_blob():
         destino = Path(settings.media_dir) / carpeta
-        destino.mkdir(parents=True, exist_ok=True)
-        (destino / nombre).write_bytes(datos)
+        try:
+            destino.mkdir(parents=True, exist_ok=True)
+            (destino / nombre).write_bytes(datos)
+        except OSError as e:
+            raise ErrorAlmacenamiento("No se pudo guardar el archivo") from e
         return f"/media/{carpeta}/{nombre}"
 
     try:

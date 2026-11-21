@@ -1,8 +1,11 @@
 import secrets
 import warnings
 
+import json
+from typing import Annotated
+
 from pydantic import field_validator
-from pydantic_settings import BaseSettings, SettingsConfigDict
+from pydantic_settings import BaseSettings, NoDecode, SettingsConfigDict
 
 
 class Settings(BaseSettings):
@@ -13,12 +16,24 @@ class Settings(BaseSettings):
     database_url: str = "sqlite:///./lejuy.db"
     secret_key: str = ""
     access_token_minutes: int = 60 * 8
-    # Orígenes del front que pueden llamar a la API. En .env: CORS_ORIGINS=["https://..."]
-    cors_origins: list[str] = ["http://localhost:3000"]
+    # Orígenes del front que pueden llamar a la API. Acepta lista JSON (["https://a", "https://b"])
+    # o separados por coma (https://a,https://b).
+    cors_origins: Annotated[list[str], NoDecode] = ["http://localhost:3000"]
     # Carpeta donde se guardan los archivos subidos (fotos de perfil) en desarrollo. Se sirve en /media.
     media_dir: str = "media"
     # En producción (Vercel) las fotos van a Vercel Blob. La variable la crea Vercel al conectar el store.
     blob_read_write_token: str = ""
+
+    @field_validator("cors_origins", mode="before")
+    @classmethod
+    def _lista_origenes(cls, valor):
+        if isinstance(valor, str):
+            valor = valor.strip()
+            lista = json.loads(valor) if valor.startswith("[") else valor.split(",")
+        else:
+            lista = valor
+        # Sin "/" final: el navegador manda el Origin sin barra y la comparación es exacta.
+        return [o.strip().rstrip("/") for o in lista if o.strip()]
 
     @field_validator("database_url")
     @classmethod
