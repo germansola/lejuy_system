@@ -1,8 +1,9 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { useRouter } from 'next/navigation';
+import { usePathname, useRouter } from 'next/navigation';
 import Sidebar from '../components/Dashboard/Sidebar';
+import MobileTopBar from '../components/Dashboard/MobileTopBar';
 import { User, initialsOf } from '../components/Dashboard/data';
 import { ApiError, clearToken, getMe, getToken } from '../lib/api';
 import { SessionContext } from './session';
@@ -12,6 +13,23 @@ export default function DashboardClient({ children }: { children: React.ReactNod
   const router = useRouter();
   const [user, setUser] = useState<User | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const [menuOpen, setMenuOpen] = useState(false);
+  const pathname = usePathname();
+
+  // Menú móvil: se cierra al cambiar de página y con Escape; mientras está
+  // abierto, la página de atrás no scrollea.
+  useEffect(() => setMenuOpen(false), [pathname]);
+  useEffect(() => {
+    if (!menuOpen) return;
+    const onKey = (e: KeyboardEvent) => e.key === 'Escape' && setMenuOpen(false);
+    const overflowPrevio = document.body.style.overflow;
+    document.body.style.overflow = 'hidden';
+    window.addEventListener('keydown', onKey);
+    return () => {
+      document.body.style.overflow = overflowPrevio;
+      window.removeEventListener('keydown', onKey);
+    };
+  }, [menuOpen]);
 
   useEffect(() => {
     if (!getToken()) {
@@ -63,8 +81,11 @@ export default function DashboardClient({ children }: { children: React.ReactNod
 
   return (
     <div className="flex min-h-screen bg-lightpink">
-      <Sidebar user={user} onLogout={logout} />
-      <SessionContext.Provider value={user}>{children}</SessionContext.Provider>
+      <Sidebar user={user} onLogout={logout} open={menuOpen} onClose={() => setMenuOpen(false)} />
+      <div className="flex min-w-0 flex-1 flex-col">
+        <MobileTopBar menuOpen={menuOpen} onOpenMenu={() => setMenuOpen(true)} />
+        <SessionContext.Provider value={user}>{children}</SessionContext.Provider>
+      </div>
     </div>
   );
 }
