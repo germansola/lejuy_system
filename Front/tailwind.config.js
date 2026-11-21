@@ -24,7 +24,16 @@ module.exports = {
       textbl: "#363636",
       footerlinks: 'rgba(54, 54, 54, 0.9)',
       bordertop: 'rgba(105, 120, 131, 0.16)',
-      darkgrey: 'rgba(44, 9, 11, 0.8)'
+      darkgrey: 'rgba(44, 9, 11, 0.8)',
+      // Dashboard (variables "Lejuy / Colores" en Figma)
+      muted: 'rgba(0, 0, 0, 0.55)',
+      line: 'rgba(105, 120, 131, 0.16)',
+      todo: '#697883',
+      todosoft: 'rgba(105, 120, 131, 0.14)',
+      doing: '#E9A23B',
+      doingsoft: 'rgba(233, 162, 59, 0.14)',
+      done: '#3E9B6B',
+      donesoft: 'rgba(62, 155, 107, 0.14)',
     },
     fontSize: {
       xs: ["0.75rem", { lineHeight: "1rem" }],
