@@ -1,0 +1,9 @@
+# Lo que no se sube a Vercel al desplegar el back.
+.venv/
+__pycache__/
+media/
+*.db
+.env
+.env.*
+!.env.example
+db.sh

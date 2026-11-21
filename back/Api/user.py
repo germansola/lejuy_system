@@ -1,11 +1,8 @@
-import secrets
-from pathlib import Path
-
 from fastapi import APIRouter, HTTPException, UploadFile, status
 from sqlalchemy import select
 from sqlalchemy.exc import IntegrityError
 
-from Api.config import settings
+from Api import archivos
 from Api.schemas import CambiarContrasena, CambiarEmail, CambiarNombre, CambiarNombreUsuario, UsuarioAsignable, UsuarioCrear, UsuarioLeer, UsuarioResumen
 from Api.security import DB, Admin, AdminODueno, UsuarioActual, hashear_contrasena, verificar_contrasena
 from Database.models import Rol, Usuario
@@ -155,15 +152,6 @@ def _extension_imagen(datos: bytes) -> str | None:
     return None
 
 
-def _borrar_foto(url: str | None) -> None:
-    """Borra del disco una foto subida antes (solo si es nuestra: /media/fotos/...)."""
-    prefijo = f"/media/{CARPETA_FOTOS}/"
-    if not url or not url.startswith(prefijo):
-        return
-    nombre = Path(url.removeprefix(prefijo)).name  # .name evita rutas tipo ../
-    (Path(settings.media_dir) / CARPETA_FOTOS / nombre).unlink(missing_ok=True)
-
-
 # Sin async: la sesión de la base es sincrónica, y así FastAPI corre todo en un hilo aparte
 # en vez de bloquear el servidor mientras guarda.
 @router.post("/me/foto", response_model=UsuarioLeer)
@@ -176,16 +164,15 @@ def subir_foto(foto: UploadFile, db: DB, usuario: UsuarioActual):
     if extension is None:
         raise HTTPException(status.HTTP_400_BAD_REQUEST, "La foto tiene que ser JPG, PNG o WebP")
 
-    carpeta = Path(settings.media_dir) / CARPETA_FOTOS
-    carpeta.mkdir(parents=True, exist_ok=True)
-    # Nombre nuevo en cada subida: evita que el navegador muestre la foto vieja desde la caché.
-    nombre = f"{usuario.id}-{secrets.token_urlsafe(12)}.{extension}"
-    (carpeta / nombre).write_bytes(datos)
+    try:
+        url = archivos.guardar(CARPETA_FOTOS, str(usuario.id), extension, datos)
+    except archivos.ErrorAlmacenamiento:
+        raise HTTPException(status.HTTP_502_BAD_GATEWAY, "No se pudo guardar la foto. Probá de nuevo en un rato.")
 
     anterior = usuario.foto_perfil
-    usuario.foto_perfil = f"/media/{CARPETA_FOTOS}/{nombre}"
+    usuario.foto_perfil = url
     guardado = _guardar(db, usuario)
-    _borrar_foto(anterior)
+    archivos.borrar(anterior, CARPETA_FOTOS)
     return guardado
 
 
@@ -194,5 +181,5 @@ def quitar_foto(db: DB, usuario: UsuarioActual):
     anterior = usuario.foto_perfil
     usuario.foto_perfil = None
     guardado = _guardar(db, usuario)
-    _borrar_foto(anterior)
+    archivos.borrar(anterior, CARPETA_FOTOS)
     return guardado
